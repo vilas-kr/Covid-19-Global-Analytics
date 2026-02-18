@@ -363,37 +363,37 @@ df_country_wise_latest = spark.read \
     .option('header', True) \
     .schema(country_wise_latest_schema) \
     .csv(RAW_PATH + 'country_wise_latest.csv') \
-    .collect()
+    .count()
 
 df_covid_19_clean_complete = spark.read \
     .option('header', True) \
     .schema(covid_19_clean_complete_schema) \
     .csv(RAW_PATH + 'covid_19_clean_complete.csv') \
-    .collect()
+    .count()
 
 df_day_wise = spark.read \
     .option('header', True) \
     .schema(day_wise_schema) \
     .csv(RAW_PATH + 'day_wise.csv') \
-    .collect()
+    .count()
 
 df_full_grouped = spark.read \
     .option('header', True) \
     .schema(full_grouped_schema) \
     .csv(RAW_PATH + 'full_grouped.csv') \
-    .collect()
+    .count()
 
 df_usa_country_wise = spark.read \
     .option('header', True) \
     .schema(usa_country_wise_schema) \
     .csv(RAW_PATH + 'usa_county_wise.csv') \
-    .collect()
+    .count()
 
 df_worldometer_data = spark.read \
     .option('header', True) \
     .schema(worldometer_data_schema) \
     .csv(RAW_PATH + 'worldometer_data.csv') \
-    .collect()
+    .count()
     
 end_time = time.time()
 print(f'''
