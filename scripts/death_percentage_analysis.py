@@ -92,5 +92,25 @@ print('''
 Country with highest death percentage
 ''')
 
+# -------------------------------------------------------------------------
+# 7. Top 10 countries by deaths per capita
+# -------------------------------------------------------------------------
+df_worldometer_data = df_worldometer_data.withColumn(
+    'deaths_per_capita(1000000)',
+    when( col('population') > 0,
+          round((( col('total_deaths') / col('population') ) * 1000000), 2),
+        ).otherwise(0)
+    ).sort( col('deaths_per_capita(1000000)').desc() )
+
+# Select only the required column
+deaths_per_capita = df_worldometer_data.select( col('country_region'), col('population'), col('total_deaths'), col('deaths_per_capita(1000000)') )
+
+deaths_per_capita.show(10)
+print('''
+---------------------------------------------------------------------------
+Top 10 countries by deaths per capita
+''')
+
+
 
     
