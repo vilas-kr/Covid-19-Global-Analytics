@@ -60,3 +60,35 @@ print('''
 Top 10 infected countries
 ''')
 
+# -------------------------------------------------------------------------
+# 6. WHO region infection rank
+# -------------------------------------------------------------------------
+who_infection_rate = df_worldometer_data.join(
+    df_full_grouped.select('country_region', 'who_region'),
+    df_full_grouped['country_region'] == df_worldometer_data['country_region'],
+    'inner'
+    ).groupBy(col('who_region')).agg(
+    sum(col('total_cases')).alias('total_cases'),
+    sum(col('population')).alias('total_population')
+    ).withColumn(
+        'infection_rate_1000',
+        (col('total_cases') / col('total_population')) * 1000
+    ).withColumn('Rank',
+        dense_rank().over(Window.orderBy(col('infection_rate_1000').desc()))
+    )
+    
+who_infection_rate.show()
+print('''
+---------------------------------------------------------------------------
+WHO Region infection ranking''')
+
+# -------------------------------------------------------------------------
+# 8. Store result into HDFS
+# -------------------------------------------------------------------------
+who_infection_rate.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'who_infection_rate_parquet')
+
+df_worldometer_data.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'worldometer_data_parquet')
