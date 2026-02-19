@@ -83,7 +83,7 @@ print('''
 WHO Region infection ranking''')
 
 # -------------------------------------------------------------------------
-# 8. Store result into HDFS
+# 7. Store result into HDFS
 # -------------------------------------------------------------------------
 who_infection_rate.write \
     .mode('overwrite') \
