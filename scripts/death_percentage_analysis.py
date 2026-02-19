@@ -111,6 +111,28 @@ print('''
 Top 10 countries by deaths per capita
 ''')
 
+# -------------------------------------------------------------------------
+# 8. Store result into HDFS
+# -------------------------------------------------------------------------
+country_daily_deaths.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'country_daily_deaths_parquet')
+
+global_daily_deaths.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'global_daily_deaths_parquet')
+    
+continent_deaths.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'continent_deaths_parquet')
+
+country_deaths.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'country_deaths_parquet')
+
+deaths_per_capita.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'deaths_per_capita_parquet')
 
 
     
