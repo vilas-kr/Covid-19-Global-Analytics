@@ -45,5 +45,17 @@ df_full_grouped = df_full_grouped.withColumn(
 country_daily_deaths = df_full_grouped.select('date', 'country_region', 
     'confirmed', 'deaths', 'Death_percentage')
 
+# -------------------------------------------------------------------------
+# 4. Compute global daily death percentage
+# -------------------------------------------------------------------------
+global_daily_deaths = df_full_grouped.groupBy('Date').agg( 
+    sum('confirmed').alias('total_confirmed'), 
+    sum('deaths').alias('total_deaths') 
+    ).withColumn('death_percentage', 
+        when( col('total_confirmed') > 0,  
+             ( col('total_deaths') / col('total_confirmed') ) * 100, 
+        ).otherwise(0) 
+    )
+
 
     
