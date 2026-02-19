@@ -73,5 +73,24 @@ continent_deaths = df_full_grouped.join( df_worldometer_data,
         ).otherwise(0) \
     )
 
+# -------------------------------------------------------------------------
+# 6. Country with highest death percentage
+# -------------------------------------------------------------------------
+country_deaths = df_full_grouped.groupBy( col('country_region') ).agg(
+    sum( col('confirmed') ).alias('total_confirmed'),
+    sum( col('deaths') ).alias('total_deaths')
+    ).withColumn('death_percentage',
+        when( col('total_confirmed') > 0,
+              ( col('total_deaths') / col('total_confirmed') ) * 100,
+        ).otherwise(0)
+    ).orderBy( col('death_percentage').desc() )
+
+
+country_deaths.show(1)
+print('''
+---------------------------------------------------------------------------
+Country with highest death percentage
+''')
+
 
     
