@@ -58,4 +58,20 @@ global_daily_deaths = df_full_grouped.groupBy('Date').agg(
     )
 
 
+# -------------------------------------------------------------------------
+# 5. Compute continent-wise death percentage
+# -------------------------------------------------------------------------
+continent_deaths = df_full_grouped.join( df_worldometer_data, 
+    df_full_grouped['country_region'] == df_worldometer_data['country_region'], 
+    'inner' 
+    ).groupBy( col('continent') ).agg( 
+    sum('confirmed').alias('total_confirmed'), 
+    sum('deaths').alias('total_deaths') 
+    ).withColumn('death_percentage', 
+        when( col('total_confirmed') > 0, 
+              ( col('total_deaths') / col('total_confirmed') ) * 100, 
+        ).otherwise(0) \
+    )
+
+
     
