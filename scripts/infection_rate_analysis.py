@@ -39,3 +39,13 @@ df_worldometer_data = df_worldometer_data.withColumn(
             (col('total_cases') / col('population')) * 1000, 2
         )
     )
+
+# -------------------------------------------------------------------------
+# 4. Active cases per 1000 population
+# -------------------------------------------------------------------------
+df_worldometer_data = df_worldometer_data.withColumn(
+    'active_cases_per(1000)',
+    round(
+            (col('active_cases') / col('population')) * 1000, 2
+        )
+    )
