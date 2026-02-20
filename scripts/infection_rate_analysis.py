@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------
 
 from pyspark.sql import SparkSession
-from pyspark.functions import *
+from pyspark.sql.functions import *
 from pyspark.sql.window import Window 
 
 # -------------------------------------------------------------------------
@@ -21,6 +21,8 @@ spark = SparkSession.builder \
     .appName('Infection Analysis') \
     .getOrCreate()
     
+spark.sparkContext.setLogLevel('ERROR')
+
 STAGING_PATH = 'hdfs:///data/covid/staging/'
 ANALYTICS_PATH = 'hdfs:///data/covid/analytics/'
 
@@ -50,15 +52,15 @@ df_worldometer_data = df_worldometer_data.withColumn(
 # -------------------------------------------------------------------------
 # 5. Top 10 countries by infection rate
 # -------------------------------------------------------------------------
-df_worldometer_data.sort(col('confirmed_cases_1000').desc()) \
-    .select(col('country_region').alias('country'), 
-            col('confirmed_cases_1000').alias('infection_rate')
-        ).show(10)
-
 print('''
 ---------------------------------------------------------------------------
 Top 10 infected countries
 ''')
+
+df_worldometer_data.sort(col('confirmed_cases_1000').desc()) \
+    .select(col('country_region').alias('country'), 
+            col('confirmed_cases_1000').alias('infection_rate')
+        ).show(10)
 
 # -------------------------------------------------------------------------
 # 6. WHO region infection rank
@@ -77,10 +79,12 @@ who_infection_rate = df_worldometer_data.join(
         dense_rank().over(Window.orderBy(col('infection_rate_1000').desc()))
     )
     
-who_infection_rate.show()
 print('''
 ---------------------------------------------------------------------------
-WHO Region infection ranking''')
+WHO Region infection ranking
+''')   
+
+who_infection_rate.show()
 
 # -------------------------------------------------------------------------
 # 7. Store result into HDFS
