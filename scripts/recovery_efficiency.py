@@ -87,7 +87,7 @@ country_recovery_growth.show(1)
 # -------------------------------------------------------------------------
 # 6. Peak recovery day per country
 # -------------------------------------------------------------------------
-contry_peak_recovery_day = df_growth.withColumn(
+country_peak_recovery_day = df_growth.withColumn(
         'rank',
         row_number().over(
             Window.partitionBy('country_region').orderBy(
@@ -99,6 +99,12 @@ contry_peak_recovery_day = df_growth.withColumn(
         col('daily_recovery_growth').alias('peak_recovery_percent')
     )
     
+print('''
+---------------------------------------------------------------------------
+Peak Recovery Day per Country
+''')
+country_peak_recovery_day.show()
+
 # -------------------------------------------------------------------------
 # 7. Store result into HDFS
 # -------------------------------------------------------------------------
