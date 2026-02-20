@@ -39,10 +39,10 @@ country_recovered_percentage = df_full_grouped.groupBy(
     ).agg(
         sum(col('confirmed')).alias('total_confirmed'),
         sum(col('recovered')).alias('total_recovered')
-    ).withColumn('recovered_percentage'
-        when(col('total_confirmed') > 0, 
+    ).withColumn('recovered_percentage',
+        when(col('total_confirmed') != 0, 
              round((col('total_recovered') / col('total_confirmed')) * 100, 
-                2)
+                2),
         ).otherwise(0)
     )
 
@@ -56,5 +56,64 @@ rolling_recovery = df_day_wise.withColumn(
         )
     )
 
+# -------------------------------------------------------------------------
+# 5. Country with fastest recovery growth
+# -------------------------------------------------------------------------
+# calculated daily recovery growth
+df_growth = df_full_grouped.withColumn(
+        "Previous_Recovered",
+        lag("Recovered").over(
+            Window.partitionBy(col('country_region'))\
+                .orderBy(col('date'))
+        )
+    ).withColumn(
+        "Daily_Recovery_Growth",
+        when(col('previous_recovered') != 0,
+                (col("new_recovered") / col('previous_recovered')) * 100,
+            ).otherwise(0)
+    ).fillna(0)
 
+# calculate country average recovery growth 
+country_recovery_growth = df_growth.groupBy('country_region').agg(
+        avg(col('daily_recovery_growth')).alias("avg_growth")
+    ).sort(col('avg_growth').desc())
 
+print('''
+---------------------------------------------------------------------------
+country with fastest recovery growth
+''')
+country_recovery_growth.show(1)
+
+# -------------------------------------------------------------------------
+# 6. Peak recovery day per country
+# -------------------------------------------------------------------------
+contry_peak_recovery_day = df_growth.withColumn(
+        'rank',
+        row_number().over(
+            Window.partitionBy('country_region').orderBy(
+                col('daily_recovery_growth').desc()
+                )
+            )
+    ).filter(col('rank') == 1).select(
+        'date', 'country_region', 
+        col('daily_recovery_growth').alias('peak_recovery_percent')
+    )
+    
+# -------------------------------------------------------------------------
+# 7. Store result into HDFS
+# -------------------------------------------------------------------------
+country_recovered_percentage.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'country_recovered_percentage_parquet')
+
+rolling_recovery.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'rolling_recovery_parquet')
+
+country_recovery_growth.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'country_recovery_growth_parquet')
+    
+contry_peak_recovery_day.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'contry_peak_recovery_day_parquet')
