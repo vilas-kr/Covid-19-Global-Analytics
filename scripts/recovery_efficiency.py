@@ -46,5 +46,15 @@ country_recovered_percentage = df_full_grouped.groupBy(
         ).otherwise(0)
     )
 
+# -------------------------------------------------------------------------
+# 4. 7-day rolling recovery average
+# -------------------------------------------------------------------------
+rolling_recovery = df_day_wise.withColumn(
+        '7_days_rolling_recovery_avg',
+        avg(col('recovered')).over(
+            Window.orderBy(col('date')).rowsBetween(-6, Window.currentRow)
+        )
+    )
+
 
 
