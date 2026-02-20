@@ -120,6 +120,6 @@ country_recovery_growth.write \
     .mode('overwrite') \
     .parquet(ANALYTICS_PATH + 'country_recovery_growth_parquet')
     
-contry_peak_recovery_day.write \
+country_peak_recovery_day.write \
     .mode('overwrite') \
     .parquet(ANALYTICS_PATH + 'contry_peak_recovery_day_parquet')
