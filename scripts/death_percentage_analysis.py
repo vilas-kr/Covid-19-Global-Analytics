@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 
+# -------------------------------------------------------------------------
 # Task 3: Death Percentage Analysis
 
 # Using full_grouped.csv:
@@ -11,6 +13,7 @@
 # Country with highest death percentage
 # Top 10 countries by deaths per capita
 # All results must be written to HDFS under /data/covid/analytics.
+# -------------------------------------------------------------------------
 
 from pyspark.sql import *
 from pyspark.sql.functions import *
@@ -23,6 +26,8 @@ spark = SparkSession.builder \
     .appName('Death Analysis') \
     .getOrCreate()
     
+spark.sparkContext.setLogLevel('ERROR')
+
 STAGING_PATH = 'hdfs:///data/covid/staging/'
 ANALYTICS_PATH = 'hdfs:///data/covid/analytics/'
 
@@ -85,12 +90,11 @@ country_deaths = df_full_grouped.groupBy( col('country_region') ).agg(
         ).otherwise(0)
     ).orderBy( col('death_percentage').desc() )
 
-
-country_deaths.show(1)
 print('''
 ---------------------------------------------------------------------------
 Country with highest death percentage
 ''')
+country_deaths.show(1)
 
 # -------------------------------------------------------------------------
 # 7. Top 10 countries by deaths per capita
@@ -105,11 +109,11 @@ df_worldometer_data = df_worldometer_data.withColumn(
 # Select only the required column
 deaths_per_capita = df_worldometer_data.select( col('country_region'), col('population'), col('total_deaths'), col('deaths_per_capita(1000000)') )
 
-deaths_per_capita.show(10)
 print('''
 ---------------------------------------------------------------------------
 Top 10 countries by deaths per capita
 ''')
+deaths_per_capita.show(10)
 
 # -------------------------------------------------------------------------
 # 8. Store result into HDFS
