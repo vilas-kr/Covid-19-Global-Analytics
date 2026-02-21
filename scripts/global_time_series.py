@@ -103,3 +103,18 @@ months_death_growth = df_day_wise.withColumn(
 
 print(f'Month-over-Month death growth rate : ')
 months_death_growth.show() 
+
+# -------------------------------------------------------------------------
+# 7. Store result into HDFS
+# -------------------------------------------------------------------------
+daily_avg_new_cases.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'daily_avg_new_cases_parquet')
+
+spike_days.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'spike_days_parquet')
+
+months_death_growth.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'months_death_growth_parquet')
