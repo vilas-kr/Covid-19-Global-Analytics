@@ -47,5 +47,24 @@ daily_avg_new_cases = df_day_wise.withColumn(
         round(col('avg_new_cases'), 2)
     ).select('date', 'new_cases', 'avg_new_cases')
 
+# -------------------------------------------------------------------------
+# 4. Detect spike days using Z-score
+# -------------------------------------------------------------------------
+# Calculate standard deviation and mean
+stat = df_day_wise.select(
+        stddev(col('new_cases')).alias('std'), 
+        avg(col('new_cases')).alias('mean')
+    ).collect()[0]
+
+spike_days = df_day_wise.withColumn(
+        'z_score',
+        ((col('new_cases') - stat['mean']) / stat['std'])
+    ).select(
+        'date', 'new_cases', 'z_score'
+    ).filter( col('z_score') > 2 )
+
+print(f'Spike days using Z-score :')
+spike_days.show()
+
 
     
