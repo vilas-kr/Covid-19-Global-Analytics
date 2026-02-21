@@ -77,5 +77,29 @@ df_day_wise.sort(
         'date', col('new_deaths').alias('deaths')
     ).limit(1).show()
 
+# -------------------------------------------------------------------------
+# 6. Month-over-Month death growth rate
+# -------------------------------------------------------------------------
+months_death_growth = df_day_wise.withColumn(
+        'month', 
+        month(col('date'))
+    ).withColumn(
+        'year',
+        year(col('date'))
+    ).groupBy(
+        col('year'), col('month')
+    ).agg(
+        sum('new_deaths').alias('total_deaths')
+    ).withColumn(
+        'previous_total_deaths',
+        lag('total_deaths').over(
+            Window.orderBy(col('year'), col('month'))
+        )
+    ).withColumn(
+        'deaths_growth',
+        ((col('total_deaths') - col('previous_total_deaths')) 
+            / col('previous_total_deaths')) * 100
+    )
 
-    
+print(f'Month-over-Month death growth rate : ')
+months_death_growth.show() 
