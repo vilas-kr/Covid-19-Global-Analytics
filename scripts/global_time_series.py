@@ -66,5 +66,16 @@ spike_days = df_day_wise.withColumn(
 print(f'Spike days using Z-score :')
 spike_days.show()
 
+# -------------------------------------------------------------------------
+# 5. Identify peak death date globally
+# -------------------------------------------------------------------------
+print(f'Peak Death date : ')
+
+df_day_wise.sort(
+        col('new_deaths').desc()
+    ).select(
+        'date', col('new_deaths').alias('deaths')
+    ).limit(1).show()
+
 
     
