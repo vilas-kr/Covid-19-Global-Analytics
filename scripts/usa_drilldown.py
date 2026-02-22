@@ -87,3 +87,33 @@ state_level_skew = state_distribution.withColumn(
 print("State Level Skew")
 state_level_skew.show()
 
+#---------------------------------------------------------------------------
+# 6. Explain Skew Impact in Distributed Systems
+#---------------------------------------------------------------------------
+"""
+Data skew happens when:
+1. Some keys (in this case states) have much more data
+2. Other keys have very little
+
+Problems Caused by Skew:
+- Uneven CPU usage
+- Long shuffle stages
+- Memory spill
+- Straggler tasks
+- Increased job completion time
+"""
+
+# -------------------------------------------------------------------------
+# 7. Store result into HDFS
+# -------------------------------------------------------------------------
+state_level_aggregation.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'state_level_aggregation_parquet')
+
+top_affected_states.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'top_affected_states_parquet')
+    
+state_level_skew.write \
+    .mode('overwrite') \
+    .parquet(ANALYTICS_PATH + 'state_level_skew_parquet')
