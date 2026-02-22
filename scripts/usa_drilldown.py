@@ -48,3 +48,18 @@ state_level_aggregation = df_usa_county_wise.groupBy(
 print('Aggregated state level data')
 state_level_aggregation.show()
 
+# -------------------------------------------------------------------------
+# 4. Identify top 10 affected states
+# -------------------------------------------------------------------------
+top_affected_states = state_level_aggregation.sort(
+        col('total_confirmed').desc(),
+        col('total_deaths').desc()
+    ).select(
+        col('province_state'),
+        col('total_confirmed'),
+        col('total_deaths')
+    )
+    
+print('Top 10 affected states')
+top_affected_states.show(10)
+
