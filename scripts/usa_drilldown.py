@@ -63,3 +63,27 @@ top_affected_states = state_level_aggregation.sort(
 print('Top 10 affected states')
 top_affected_states.show(10)
 
+# -------------------------------------------------------------------------
+# 5. Detect data skew across states
+# -------------------------------------------------------------------------
+state_distribution = df_usa_county_wise.groupBy(
+            "Province_State"
+        ).agg(
+            count("*").alias("record_count")
+        ).orderBy(
+            col("record_count").desc()
+        )
+
+stats = state_distribution.agg(
+        avg("record_count").alias("mean"),
+        stddev("record_count").alias("std")
+    ).first()
+
+state_level_skew = state_distribution.withColumn(
+        "skew",
+        (col("record_count") - lit(stats["mean"])) / lit(stats["std"])
+    ).orderBy(col("skew").desc())
+
+print("State Level Skew")
+state_level_skew.show()
+
