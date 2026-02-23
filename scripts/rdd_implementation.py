@@ -62,4 +62,24 @@ Country -> Total confimed \n\
 for country, confirmed in result:
     print(f'{country} -> {confirmed}')
 
+# -------------------------------------------------------------------------
+# 4. Calculate total deaths per country
+# -------------------------------------------------------------------------
+country_deaths = rdd_full_grouped.map(
+        lambda x: (x[1], int(x[3]))
+    )
 
+total_deaths = country_deaths.reduceByKey(
+        lambda a, b: a + b
+    )
+
+result = total_deaths.take(10)
+
+print('\nDeaths per country')
+print(f'\
+---------------------------------------------------------------------- \n\
+Country -> Total Deaths \n\
+----------------------------------------------------------------------')
+for country, deaths in result:
+    print(f'{country} -> {deaths}')
+    
