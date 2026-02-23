@@ -127,3 +127,51 @@ df_country_confirmed.count()
 df_time = time.time() - start_time
 print(f"DataFrame Execution Time: {df_time:.2f} seconds")
   
+# -------------------------------------------------------------------------
+# 7. Store result into HDFS
+# -------------------------------------------------------------------------  
+country_death_percent.write \
+    .mode("overwrite") \
+    .parquet(ANALYTICS_PATH + 'country_death_percent_parquet')
+
+'''
+spark-submit \
+  --master yarn \
+  --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=/mnt/d/bridgelabs/spark/covid_analytics/spark_env/bin/python \
+  --conf spark.executorEnv.PYSPARK_PYTHON=/mnt/d/bridgelabs/spark/covid_analytics/spark_env/bin/python \
+  scripts/rdd_implementation.py
+'''
+# -------------------------------------------------------------------------
+# Explain:
+# -------------------------------------------------------------------------
+# 1. Why reduceByKey is preferred over groupByKey
+# reduceByKey is preferred over groupByKey because it performs local 
+# aggregation on each partition before shuffling data across the network.
+# In groupByKey, all values associated with a key are shuffled across 
+# the network and stored in memory, which increases network traffic 
+# and memory usage. This can lead to performance degradation and 
+# even Out Of Memory (OOM) errors for large datasets. On the other hand, 
+# reduceByKey reduces the data at the partition level first and only 
+# transfers the aggregated result, thereby:
+# -> Reducing shuffle size
+# -> Lowering memory consumption
+# -> Improving performance
+
+# 2. When RDD should be avoided
+# RDD should be avoided when working with structured or semi-structured data, 
+# such as CSV, JSON, Parquet, or database tables.
+
+# Modern Spark applications prefer DataFrames or Datasets because they:
+# -> Use the Catalyst Optimizer
+# -> Provide better execution planning
+# -> Offer improved memory management
+# -> Support SQL queries
+# -> Deliver better performance
+
+# RDD does not support automatic optimization and requires manual handling
+# of transformations, making it less efficient for production-level big 
+# data processing.
+# RDD is mainly used for:
+# -> Low-level transformations
+# -> Fine-grained control
+# -> Learning Spark fundamentals
