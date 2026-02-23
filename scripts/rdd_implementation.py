@@ -83,3 +83,18 @@ Country -> Total Deaths \n\
 for country, deaths in result:
     print(f'{country} -> {deaths}')
     
+# -------------------------------------------------------------------------
+# 5. Compute death percentage using reduceByKey
+# -------------------------------------------------------------------------
+aggregated = total_confirmed.join(total_deaths)
+
+death_percentage = aggregated.mapValues(
+        lambda x: (x[1] / x[0]) * 100 if x[0] != 0 else 0
+    )
+
+country_death_percent = death_percentage.toDF(['Country', 
+        'Death_Percentage'])
+
+print('\nDeath percent per country')
+country_death_percent.show()
+
