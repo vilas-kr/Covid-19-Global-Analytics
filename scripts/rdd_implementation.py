@@ -98,3 +98,32 @@ country_death_percent = death_percentage.toDF(['Country',
 print('\nDeath percent per country')
 country_death_percent.show()
 
+# -------------------------------------------------------------------------
+# 6. Compare RDD performance vs DataFrame
+# -------------------------------------------------------------------------
+
+# Calculated RDD performance time
+start_time = time.time()
+
+rdd = spark.sparkContext.textFile(RAW_PATH + 'full_grouped.csv')
+header = rdd.first()
+
+# Remove header 
+data = rdd.filter(lambda row: row != header)
+
+rdd_country_confirmed = data.map(lambda line: line.split(",")) \
+    .map(lambda columns: (columns[1], int(columns[2]))) \
+    .reduceByKey(lambda confirmed1, confirmed2: confirmed1 + confirmed2)
+rdd_country_confirmed.count()
+rdd_time = time.time() - start_time
+print(f"RDD Execution Time: {rdd_time:.2f} seconds")
+
+# Calculate Dataframe performance time
+start_time = time.time()
+df_full_grouped = spark.read.csv(RAW_PATH + 'full_grouped.csv',
+                    header=True,inferSchema=True)
+df_country_confirmed = df_full_grouped.groupBy("Country/Region").sum("Confirmed")
+df_country_confirmed.count()
+df_time = time.time() - start_time
+print(f"DataFrame Execution Time: {df_time:.2f} seconds")
+  
