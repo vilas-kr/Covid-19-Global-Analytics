@@ -1,5 +1,4 @@
 # COVID-19 Global Analytics Platform
-## Project Overview
 A distributed big data analytics platform built using Apache Spark (PySpark) integrated with Hadoop (HDFS + YARN) in pseudo-distributed mode.
 
 This project simulates a real-world Data Engineering use case for analyzing global COVID-19 datasets at scale using distributed processing techniques.
