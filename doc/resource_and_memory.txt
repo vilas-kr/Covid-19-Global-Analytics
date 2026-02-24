@@ -1,0 +1,96 @@
+Task 12: Resource & Memory Planning
+
+1. Executor Memory
+Executor memory is the amount of memory allocated to each Spark executor process.
+It is configured using: "--executor-memory 4G"
+
+Executor memory is used for:
+- Caching DataFrames / RDDs
+- Shuffle operations
+- Aggregations and joins
+- User-defined objects
+- Execution overhead
+
+Executor memory is divided into:
+- Storage Memory → Caching and persistence
+- Execution Memory → Shuffle, joins, aggregation
+- Reserved Memory → Internal Spark usage
+
+If Memory Is Insufficient:
+- Data spills to disk
+- Garbage Collection increases
+- Performance degrades
+- Out Of Memory (OOM) may occur
+
+
+2. Executor Cores
+Executor cores define how many tasks an executor can run in parallel.
+It is configured using: "--executor-cores 4"
+    4 cores = 4 parallel tasks per executor
+
+If Cores Are Too High:
+- Memory contention increases
+- GC overhead increases
+
+If Cores Are Too Low:
+- CPU underutilization
+
+Best Practice:
+- 3–5 cores per executor
+- Balance cores with available memory
+
+
+3. Ideal Partition Size 
+Spark performs best when partition size is between 128 MB – 256 MB
+
+If Partitions Are Too Small:
+- Too many tasks
+- Scheduler overhead increases
+
+If Partitions Are Too Large:
+- High memory usage
+- More spill to disk
+- OOM risk
+
+
+4. YARN Container Allocation
+In YARN mode, each executor runs inside a YARN container.
+
+If Limits Are Exceeded:
+- YARN kills the container
+- Job fails
+
+5. What Happens During OOM (Out Of Memory)
+OOM occurs when executor memory is insufficient.
+
+Common Causes:
+- Large shuffle operations
+- Data skew
+- Large aggregations
+- Large broadcast joins
+- Too few partitions
+
+Types of OOM:
+- Java Heap Space Error
+- GC Overhead Limit Exceeded
+- Container killed by YARN
+
+Effects:
+- Task failure
+- Stage retry
+- Job failure if repeated
+
+6. Spill to Disk Behavior
+When execution memory is full, Spark spills intermediate data to disk instead of failing immediately.
+
+Spill Occurs During:
+- Shuffle
+- Sort
+- Aggregation
+
+Impact:
+- Increased disk I/O
+- Slower performance
+- Prevents immediate crash
+
+Spill is slower than in-memory computation but safer than OOM.
