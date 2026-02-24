@@ -1,0 +1,78 @@
+COVID-19 GLOBAL ANALYTICS PLATFORM - HDFS COMMAND DOCUMENTATION
+
+This document contains commonly used HDFS commands used in the project.
+
+---------------------------------------------------------------------------
+  1. Check HDFS Status
+---------------------------------------------------------------------------
+Start HDFS: start-dfs.sh
+
+Stop HDFS: stop-dfs.sh
+
+Check running Hadoop services: jps
+
+---------------------------------------------------------------------------
+  2. Create Directories in HDFS
+---------------------------------------------------------------------------
+Create base project directory: hdfs dfs -mkdir /data
+
+Create covid project directory: hdfs dfs -mkdir /data/covid
+
+Create staging directory: hdfs dfs -mkdir /data/covid/staging
+
+Create raw directory: hdfs dfs -mkdir /data/covid/raw
+
+---------------------------------------------------------------------------
+  3. Upload Files to HDFS
+---------------------------------------------------------------------------
+Upload CSV file: hdfs dfs -put full_grouped.csv /data/covid/raw/
+
+Upload worldometer data: hdfs dfs -put worldometer_data.csv /data/covid/raw/
+
+Overwrite existing file: hdfs dfs -put -f file.csv /data/covid/raw/
+
+---------------------------------------------------------------------------
+  4. View Files in HDFS
+---------------------------------------------------------------------------
+List files: hdfs dfs -ls /data/covid/
+
+List files in staging: hdfs dfs -ls /data/covid/staging/
+
+View file content: hdfs dfs -cat /data/covid/raw/full_grouped.csv
+
+View first few lines: hdfs dfs -head /data/covid/raw/full_grouped.csv
+
+---------------------------------------------------------------------------
+  5. Remove Files or Directories
+---------------------------------------------------------------------------
+Remove file: hdfs dfs -rm /data/covid/raw/full_grouped.csv
+
+Remove directory recursively: hdfs dfs -rm -r /data/covid/raw
+
+---------------------------------------------------------------------------
+  6. Download Files from HDFS
+---------------------------------------------------------------------------
+Download file to local: hdfs dfs -get /data/covid/raw/full_grouped.csv
+
+Download entire directory: hdfs dfs -get /data/covid/staging
+
+---------------------------------------------------------------------------
+  7. Check Disk Usage
+---------------------------------------------------------------------------
+Check size of directory: hdfs dfs -du -h /data/covid/
+
+Check total disk usage: hdfs dfs -df -h
+
+---------------------------------------------------------------------------
+  8. Change Permissions
+---------------------------------------------------------------------------
+Change permissions: hdfs dfs -chmod 755 /data/covid/
+
+Change ownership: hdfs dfs -chown user:group /data/covid/
+
+---------------------------------------------------------------------------
+  9. Verify Data After Spark Processing
+---------------------------------------------------------------------------
+List Parquet output: hdfs dfs -ls /data/covid/staging/
+
+Check partitioned output: hdfs dfs -ls /data/covid/staging/full_grouped.parquet/
