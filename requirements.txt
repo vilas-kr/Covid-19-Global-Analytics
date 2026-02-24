@@ -1,5 +1,1 @@
-jupyter
-ipykernel
-findspark
 pyspark
-pandas
