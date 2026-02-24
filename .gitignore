@@ -1,2 +1,6 @@
-.ipynb_checkpoint
+*/.ipynb_checkpoints/
+*/*.ipynb
 venv
+spark_env
+data
+.python-version
