@@ -41,7 +41,7 @@ df_worldometer_data = spark.read.parquet(STAGING_PATH + 'worldometer_data_parque
 # 3. Compute daily death percentage per country
 # -------------------------------------------------------------------------
 df_full_grouped = df_full_grouped.withColumn(
-    'Death_percentage', 
+        'Death_percentage', 
         when( col('confirmed') > 0, 
             ( col('deaths') / col('confirmed') ) * 100, 
         ).otherwise(0) 
@@ -54,25 +54,28 @@ country_daily_deaths = df_full_grouped.select('date', 'country_region',
 # 4. Compute global daily death percentage
 # -------------------------------------------------------------------------
 global_daily_deaths = df_full_grouped.groupBy('Date').agg( 
-    sum('confirmed').alias('total_confirmed'), 
-    sum('deaths').alias('total_deaths') 
-    ).withColumn('death_percentage', 
+        sum('confirmed').alias('total_confirmed'), 
+        sum('deaths').alias('total_deaths') 
+    ).withColumn(
+        'death_percentage', 
         when( col('total_confirmed') > 0,  
              ( col('total_deaths') / col('total_confirmed') ) * 100, 
         ).otherwise(0) 
     )
 
-
 # -------------------------------------------------------------------------
 # 5. Compute continent-wise death percentage
 # -------------------------------------------------------------------------
-continent_deaths = df_full_grouped.join( df_worldometer_data, 
-    df_full_grouped['country_region'] == df_worldometer_data['country_region'], 
-    'inner' 
+continent_deaths = df_full_grouped.join( 
+        df_worldometer_data, 
+        df_full_grouped['country_region'] == 
+            df_worldometer_data['country_region'], 
+        'inner' 
     ).groupBy( col('continent') ).agg( 
-    sum('confirmed').alias('total_confirmed'), 
-    sum('deaths').alias('total_deaths') 
-    ).withColumn('death_percentage', 
+        sum('confirmed').alias('total_confirmed'), 
+        sum('deaths').alias('total_deaths') 
+    ).withColumn(
+        'death_percentage', 
         when( col('total_confirmed') > 0, 
               ( col('total_deaths') / col('total_confirmed') ) * 100, 
         ).otherwise(0) \
@@ -82,37 +85,36 @@ continent_deaths = df_full_grouped.join( df_worldometer_data,
 # 6. Country with highest death percentage
 # -------------------------------------------------------------------------
 country_deaths = df_full_grouped.groupBy( col('country_region') ).agg(
-    sum( col('confirmed') ).alias('total_confirmed'),
-    sum( col('deaths') ).alias('total_deaths')
-    ).withColumn('death_percentage',
+        sum( col('confirmed') ).alias('total_confirmed'),
+        sum( col('deaths') ).alias('total_deaths')
+    ).withColumn(
+        'death_percentage',
         when( col('total_confirmed') > 0,
               ( col('total_deaths') / col('total_confirmed') ) * 100,
         ).otherwise(0)
     ).orderBy( col('death_percentage').desc() )
 
-print('''
----------------------------------------------------------------------------
-Country with highest death percentage
-''')
+print(f'Country with highest death percentage : \n')
 country_deaths.show(1)
 
 # -------------------------------------------------------------------------
 # 7. Top 10 countries by deaths per capita
 # -------------------------------------------------------------------------
 df_worldometer_data = df_worldometer_data.withColumn(
-    'deaths_per_capita(1000000)',
-    when( col('population') > 0,
-          round((( col('total_deaths') / col('population') ) * 1000000), 2),
+        'deaths_per_capita(1000000)',
+        when( col('population') > 0,
+            round((( col('total_deaths') / col('population') ) * 1000000), 
+                2),
         ).otherwise(0)
     ).sort( col('deaths_per_capita(1000000)').desc() )
 
 # Select only the required column
-deaths_per_capita = df_worldometer_data.select( col('country_region'), col('population'), col('total_deaths'), col('deaths_per_capita(1000000)') )
+deaths_per_capita = df_worldometer_data.select( 
+        col('country_region'), col('population'), 
+        col('total_deaths'), col('deaths_per_capita(1000000)') 
+    )
 
-print('''
----------------------------------------------------------------------------
-Top 10 countries by deaths per capita
-''')
+print(f'Top 10 countries by deaths per capita : \n')
 deaths_per_capita.show(10)
 
 # -------------------------------------------------------------------------
