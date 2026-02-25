@@ -87,7 +87,7 @@ full_grouped_schema = StructType([
     StructField('WHO Region',StringType(), True)
 ])
 
-usa_country_wise_schema = StructType([
+usa_county_wise_schema = StructType([
     StructField('UID', LongType(), True),
     StructField('iso2', StringType(), True),
     StructField('iso3', StringType(), True),
@@ -97,7 +97,11 @@ usa_country_wise_schema = StructType([
     StructField('Province_State', StringType(), True),
     StructField('Country_Region', StringType(), True),
     StructField('Lat', DoubleType(), True),
-    StructField('Long_', DoubleType(), True)
+    StructField('Long_', DoubleType(), True),
+    StructField('Combined_Key', StringType(), True),
+    StructField('date', DateType(), True),
+    StructField('Confirmed',LongType(), True),
+    StructField('Deaths',LongType(), True)  
 ])
 
 worldometer_data_schema = StructType([
@@ -136,9 +140,9 @@ df_full_grouped = spark.read \
     .schema(full_grouped_schema) \
     .csv(RAW_PATH + 'full_grouped.csv')
 
-df_usa_country_wise = spark.read \
+df_usa_county_wise = spark.read \
     .option('header', True) \
-    .schema(usa_country_wise_schema) \
+    .schema(usa_county_wise_schema) \
     .csv(RAW_PATH + 'usa_county_wise.csv')
 
 df_worldometer_data = spark.read \
@@ -176,7 +180,7 @@ df_full_grouped = df_full_grouped \
     .withColumnRenamed('New recovered', 'new_recovered') \
     .withColumnRenamed('WHO Region', 'WHO_region') 
 
-df_usa_country_wise = df_usa_country_wise \
+df_usa_county_wise = df_usa_county_wise \
     .withColumnRenamed('Long_', 'long')
     
 df_worldometer_data = df_worldometer_data \
@@ -242,8 +246,9 @@ df_full_grouped = df_full_grouped.na.fill({
     'who_region' : 'unknown'
 })
 
-df_usa_country_wise = df_usa_country_wise.na.drop(subset=['uid', 'country_region'])
-df_usa_country_wise = df_usa_country_wise.na.fill({
+df_usa_county_wise = df_usa_county_wise.na.drop(subset=['uid', 'country_region'])
+df_usa_county_wise = df_usa_county_wise.drop('date', 'Combined_Key')
+df_usa_county_wise = df_usa_county_wise.na.fill({
     'iso2' : 'unknown',
     'iso3' : 'unknown',
     'code3' : 0,
@@ -251,7 +256,9 @@ df_usa_country_wise = df_usa_country_wise.na.fill({
     'Admin2' : 'unknown',
     'Province_State' : 'unknown',
     'Lat' : 0.0,
-    'long' : 0.0 
+    'long' : 0.0,
+    'confirmed' : 0,
+    'Deaths' : 0
 })
 
 df_worldometer_data = df_worldometer_data.na.drop(subset=['country_region'])
@@ -286,7 +293,7 @@ df_full_grouped.write \
     .mode('overwrite') \
     .parquet(STAGING_PATH + 'full_grouped_parquet')
     
-df_usa_country_wise.write \
+df_usa_county_wise.write \
     .mode('overwrite') \
     .parquet(STAGING_PATH + 'usa_county_wise_parquet')
     
@@ -382,9 +389,9 @@ df_full_grouped = spark.read \
     .csv(RAW_PATH + 'full_grouped.csv') \
     .count()
 
-df_usa_country_wise = spark.read \
+df_usa_county_wise = spark.read \
     .option('header', True) \
-    .schema(usa_country_wise_schema) \
+    .schema(usa_county_wise_schema) \
     .csv(RAW_PATH + 'usa_county_wise.csv') \
     .count()
 
