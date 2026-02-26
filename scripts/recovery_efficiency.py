@@ -3,10 +3,10 @@
 # -------------------------------------------------------------------------
 # Task 5: Recovery Efficiency
 
-# Recovered percentage per country.
-# 7-day rolling recovery average (Window function).
-# Country with fastest recovery growth.
-# Peak recovery day per country
+# 1. Recovered percentage per country.
+# 2. 7-day rolling recovery average (Window function).
+# 3. Country with fastest recovery growth.
+# 4. Peak recovery day per country
 # -------------------------------------------------------------------------
 
 from pyspark.sql import SparkSession
@@ -39,7 +39,8 @@ country_recovered_percentage = df_full_grouped.groupBy(
     ).agg(
         sum(col('confirmed')).alias('total_confirmed'),
         sum(col('recovered')).alias('total_recovered')
-    ).withColumn('recovered_percentage',
+    ).withColumn(
+        'recovered_percentage',
         when(col('total_confirmed') != 0, 
              round((col('total_recovered') / col('total_confirmed')) * 100, 
                 2),
@@ -61,27 +62,26 @@ rolling_recovery = df_day_wise.withColumn(
 # -------------------------------------------------------------------------
 # calculated daily recovery growth
 df_growth = df_full_grouped.withColumn(
-        "Previous_Recovered",
+        'Previous_Recovered',
         lag("Recovered").over(
             Window.partitionBy(col('country_region'))\
                 .orderBy(col('date'))
         )
     ).withColumn(
-        "Daily_Recovery_Growth",
+        'Daily_Recovery_Growth',
         when(col('previous_recovered') != 0,
                 (col("new_recovered") / col('previous_recovered')) * 100,
-            ).otherwise(0)
+        ).otherwise(0)
     ).fillna(0)
 
 # calculate country average recovery growth 
-country_recovery_growth = df_growth.groupBy('country_region').agg(
-        avg(col('daily_recovery_growth')).alias("avg_growth")
+country_recovery_growth = df_growth.groupBy(
+        'country_region'
+    ).agg(
+        avg(col('daily_recovery_growth')).alias('avg_growth')
     ).sort(col('avg_growth').desc())
 
-print('''
----------------------------------------------------------------------------
-country with fastest recovery growth
-''')
+print(f'country with fastest recovery growth')
 country_recovery_growth.show(1)
 
 # -------------------------------------------------------------------------
@@ -92,17 +92,14 @@ country_peak_recovery_day = df_growth.withColumn(
         row_number().over(
             Window.partitionBy('country_region').orderBy(
                 col('daily_recovery_growth').desc()
-                )
             )
+        )
     ).filter(col('rank') == 1).select(
         'date', 'country_region', 
         col('daily_recovery_growth').alias('peak_recovery_percent')
     )
     
-print('''
----------------------------------------------------------------------------
-Peak Recovery Day per Country
-''')
+print(f'Peak Recovery Day per Country')
 country_peak_recovery_day.show()
 
 # -------------------------------------------------------------------------
@@ -122,4 +119,4 @@ country_recovery_growth.write \
     
 country_peak_recovery_day.write \
     .mode('overwrite') \
-    .parquet(ANALYTICS_PATH + 'contry_peak_recovery_day_parquet')
+    .parquet(ANALYTICS_PATH + 'country_peak_recovery_day_parquet')
