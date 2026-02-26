@@ -37,53 +37,50 @@ df_worldometer_data = spark.read.parquet(STAGING_PATH + \
 # 3. Confirmed cases per 1000 population
 # -------------------------------------------------------------------------
 df_worldometer_data = df_worldometer_data.withColumn(
-    'confirmed_cases_1000',
-    round((col('total_cases') / col('population')) * 1000, 2)
+        'confirmed_cases_1000',
+        round((col('total_cases') / col('population')) * 1000, 2)
     )
 
 # -------------------------------------------------------------------------
 # 4. Active cases per 1000 population
 # -------------------------------------------------------------------------
 df_worldometer_data = df_worldometer_data.withColumn(
-    'active_cases_1000',
-    round((col('active_cases') / col('population')) * 1000, 2)
+        'active_cases_1000',
+        round((col('active_cases') / col('population')) * 1000, 2)
     )
 
 # -------------------------------------------------------------------------
 # 5. Top 10 countries by infection rate
 # -------------------------------------------------------------------------
-print('''
----------------------------------------------------------------------------
-Top 10 infected countries
-''')
-
-df_worldometer_data.sort(col('confirmed_cases_1000').desc()) \
-    .select(col('country_region').alias('country'), 
-            col('confirmed_cases_1000').alias('infection_rate')
-        ).show(10)
+print(f'Top 10 infected countries')
+df_worldometer_data.sort(
+        col('confirmed_cases_1000').desc()
+    ).select(
+        col('country_region').alias('country'), 
+        col('confirmed_cases_1000').alias('infection_rate')
+    ).show(10)
 
 # -------------------------------------------------------------------------
 # 6. WHO region infection rank
 # -------------------------------------------------------------------------
 who_infection_rate = df_worldometer_data.join(
-    df_full_grouped.select('country_region', 'who_region'),
-    df_full_grouped['country_region'] == df_worldometer_data['country_region'],
-    'inner'
+        df_full_grouped.select('country_region', 'who_region'),
+        df_full_grouped['country_region'] == df_worldometer_data['country_region'],
+        'inner'
     ).groupBy(col('who_region')).agg(
-    sum(col('total_cases')).alias('total_cases'),
-    sum(col('population')).alias('total_population')
+        sum(col('total_cases')).alias('total_cases'),
+        sum(col('population')).alias('total_population')
     ).withColumn(
         'infection_rate_1000',
         (col('total_cases') / col('total_population')) * 1000
-    ).withColumn('Rank',
-        dense_rank().over(Window.orderBy(col('infection_rate_1000').desc()))
+    ).withColumn(
+        'Rank',
+        dense_rank().over(
+            Window.orderBy(col('infection_rate_1000').desc())
+        )
     )
     
-print('''
----------------------------------------------------------------------------
-WHO Region infection ranking
-''')   
-
+print(f'WHO Region infection ranking')   
 who_infection_rate.show()
 
 # -------------------------------------------------------------------------
@@ -91,7 +88,7 @@ who_infection_rate.show()
 # -------------------------------------------------------------------------
 who_infection_rate.write \
     .mode('overwrite') \
-    .parquet(ANALYTICS_PATH + 'who_infection_rate_parquet')
+    .parquet(ANALYTICS_PATH + 'WHO_infection_rate_parquet')
 
 df_worldometer_data.write \
     .mode('overwrite') \
